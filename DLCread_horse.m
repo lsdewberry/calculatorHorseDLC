@@ -1,7 +1,7 @@
 %choose path
-clear variables;
+%clear variables;
 %clearvars -except output
-scipath = 'C:\Users\savan\Desktop\horse';
+scipath = 'C:\Users\savan\OneDrive - University of Florida\NPRlab\horse\Fatigue Data Set\Fatigue Data Set';
 
 %%
 files = dir(scipath);
@@ -28,9 +28,10 @@ d2 = designfilt('lowpassiir','FilterOrder',3,'HalfPowerFrequency',0.04,'DesignMe
 %counter, should be same as filenum.
 i=1;
 for filenum = 1:size(files, 1)
+    i=filenum;
     close all
     spotcheck = 1; %round(rand(1)*rand(1)); %Loud or quiet - do you want it to graph stuff.
-    pausevalue = 1; %if I want to pause after graphing each few lines. Otherwise it graphs all quick.
+    pausevalue = 0; %if I want to pause after graphing each few lines. Otherwise it graphs all quick.
     %% import excel files
     myfile = files(filenum).name
     output(i).filname = myfile; %I will have a massive 'output' structure at the end of this. I really need to initialize output tbh.
@@ -99,27 +100,31 @@ for filenum = 1:size(files, 1)
     end
     
     %% analysis of sided data
-    %Hind Toe
-    HTx = HindToeX(HindToeL>L); HTf=frame(HindToeL>L); color=colors(1,:); %hind toe x
-    HTy = (-HindToeY(HindToeL>L))-floor; %y is inverted because origin is top left
-        [sHTx,sHTy,sHTf] = basiccmooth(HTx, HTy, HTf, d2);%using slightly more strict filter
+    %Hind heel
+    HHx = HindHeelX(HindHeelL>L); HHf=frame(HindHeelL>L); color=colors(1,:); %hind heel x
+    HHy = (-HindHeelY(HindHeelL>L))-floor; %y is inverted because origin is top left
+        [sHHx,sHHy,sHHf] = basiccmooth(HHx, HHy, HHf, d2);%using slightly more strict filter
       [output(i).Hdutyfactor.avg, output(i).Hstridelength.avg, output(i).numcycles, ...
           output(i).stridestance.y.avg, output(i).stridestance.f.avg, strides, ...
           output(i).Hdutyfactor.std,output(i).Hstridelength.std,...
-          output(i).stridestance.y.std,output(i).stridestance.f.std] = pulloutXstuff(sHTx,sHTf,directionfactor,spotcheck,1,color,'HindToeX');
-      if size(strides,1)<1
-          output(i).numcycles     = 0;
-          i=i+1;
+          output(i).stridestance.y.std,output(i).stridestance.f.std] = pulloutXstuff(sHHx,sHHf,directionfactor,spotcheck,1,color,'HindHeelX');
+      if size(strides,1)<1 || sum(sum((isnan(strides))))
+          horseReqOut(i).fileName = output(i).filname;
+          horseReqOut(i).Direction = output(i).direction;
+          horseReqOut(i).numberofcycles = output(i).numcycles;
+          if spotcheck
+            saveas(fig1,[myfile,'_fulltrial.png']);
+          end
           continue %go to next iteration of for loop because there aren't enough strides in this trial
       end
         output(i).Hstridelength.avg = output(i).Hstridelength.avg*-directionfactor;
-      [output(i).HT.x.avg, output(i).HT.f.avg, output(i).HT.x.std,output(i).HT.f.std] = avgforstride (sHTx,sHTf, strides, 'x',spotcheck,color,'HindToeX'); 
+      [output(i).HH.x.avg, output(i).HH.f.avg, output(i).HH.x.std,output(i).HH.f.std] = avgforstride (sHHx,sHHf, strides, 'x',spotcheck,color,'HindHeelX'); 
         if spotcheck & pausevalue
-            pause(3)
+            pause
         end
        color=colors(2,:);%rand(1,3);
-      [~,output(i).ToeProminance.avg,~,output(i).ToeProminance.std] = pulloutYstuff(sHTy,sHTf,spotcheck,color,'HindToeY');%mean 1/2 peak width and mean prominance
-      [output(i).HT.y.avg, ~,output(i).HT.y.std,~] =   avgforstride(sHTy,sHTf, strides, 'z',spotcheck,color,'HindToeY'); 
+      [~,output(i).HeelProminance.avg,~,output(i).HeelProminance.std] = pulloutYstuff(sHHy,sHHf,spotcheck,color,'HindHeelY');%mean 1/2 peak width and mean prominance
+      [output(i).HH.y.avg, ~,output(i).HH.y.std,~] =   avgforstride(sHHy,sHHf, strides, 'z',spotcheck,color,'HindHeelY'); 
         if spotcheck & pausevalue
             pause
         end
@@ -144,19 +149,19 @@ for filenum = 1:size(files, 1)
             pause
             end
         end
-    %Hind Heel    
-    HHx= HindHeelX(HindHeelL>L); HHf=frame(HindHeelL>L);color=colors(5,:);%rand(1,3);
-    HHy = -HindHeelY(HindHeelL>L)-floor;
-    [sHHx,sHHy,sHHf] = basiccmooth(HHx, HHy, HHf, d1);%using og filter 
-      [output(i).HH.x.avg, output(i).HH.f.avg,output(i).HH.x.std,output(i).HH.f.std] = avgforstride (sHHx,sHHf, strides, 'x',spotcheck,color,'HindHeelX');
+    %Hind Toe    
+    HTx= HindToeX(HindToeL>L); HTf=frame(HindToeL>L);color=colors(5,:);%rand(1,3);
+    HTy = -HindToeY(HindToeL>L)-floor;
+    [sHTx,sHTy,sHTf] = basiccmooth(HTx, HTy, HTf, d1);%using og filter 
+      [output(i).HT.x.avg, output(i).HT.f.avg,output(i).HT.x.std,output(i).HT.f.std] = avgforstride (sHTx,sHTf, strides, 'x',spotcheck,color,'HindToeX');
         if spotcheck
             figure(1);
             %plot(frame(HindHeelL>L),HHx,'DisplayName','HindHeelX')
-            plot(sHHf,sHHx/10,'Color',color,'DisplayName','HindHeelX/10')
+            plot(sHTf,sHTx/10,'Color',color,'DisplayName','HindToeX/10')
         end
         color=colors(6,:);%rand(1,3);%y is inverted because origin is top left
-      [~,output(i).HeelProminance.avg,~,output(i).HeelProminance.std] = pulloutYstuff(sHHy,sHHf,spotcheck,color,'HindHeelY');%mean 1/2 peak width and mean prominance
-      [output(i).HH.y.avg, ~,output(i).HH.y.std] = avgforstride (sHHy,sHHf, strides, 'y',spotcheck,color,'HindHeelY');
+      [~,output(i).ToeProminance.avg,~,output(i).ToeProminance.std] = pulloutYstuff(sHTy,sHTf,spotcheck,color,'HindToeY');%mean 1/2 peak width and mean prominance
+      [output(i).HT.y.avg, ~,output(i).HT.y.std] = avgforstride (sHTy,sHTf, strides, 'y',spotcheck,color,'HindToeY');
         if spotcheck & pausevalue
             pause
         end
@@ -281,18 +286,33 @@ for filenum = 1:size(files, 1)
         end
         
     %velocity
-        velocity = (Nx(end)-Nx(1))/output(i).shankLength.avg; %distance in pixels / pix per shanklength = shanklengths
-        velocity = velocity/((Nf(end)-Nf(1))/framestosecs); %sl/ frames*s/frames=s)->sl/s
-        output(i).velocity.avg = abs(velocity);
+        velocity =  abs(gradient(output(i).B.x.avg)) ./ (gradient(output(i).B.f.avg));
+        output(i).velocity.avg = abs(mean(velocity));%in pixels per frame
+        output(i).velocity.std = std(velocity);%in pixels per frame
 
 
-    i=i+1;
+    
     
     %pause(3) 
     if spotcheck
-     %saveas(fig1,[myfile,'_fulltrial.png']);
-     %saveas(fig2,[myfile,'_avgstride.png']);
+     saveas(fig1,[myfile,'_fulltrial.png']);
+     saveas(fig2,[myfile,'_avgstride.png']);
     end
+    
+    horseReqOut(i).fileName = output(i).filname;
+    horseReqOut(i).Direction = output(i).direction;
+    horseReqOut(i).numberofcycles = output(i).numcycles;
+    horseReqOut(i).shanklength = output(i).shankLength.avg;
+    
+    horseReqOut(i).DutyFactorAvg = output(i).Hdutyfactor.avg;
+    horseReqOut(i).DutyFactorStd = output(i).Hdutyfactor.std;
+    horseReqOut(i).stridelengthAvg = output(i).Hstridelength.avg;
+    horseReqOut(i).stridelengthStd = output(i).Hstridelength.std;
+    horseReqOut(i).speedAvg = output(i).velocity.avg;
+    horseReqOut(i).speedStd = output(i).velocity.std;
+    horseReqOut(i).AngleAvg = mean(output(i).HT_HM_HH.y.avg);
+    horseReqOut(i).AngleStd = std(output(i).HT_HM_HH.y.avg);
+    
 end
 allDone = 'Yay!'
 
@@ -359,41 +379,40 @@ sdxdf = dxdf; %filtfilt(d1, dxdf);
 % sddxdf = gradient(sdxdf(:)) ./ gradient(f(:));
 % [pks,toeoff] = findpeaks(sddxdf,f, 'MinPeakWidth',25,'MinPeakDistance',75); %used to find temporal measures   
 %when derivative is higher than 0, it's in swing
-stance=(-directionfactor*sdxdf)>-0.25;
+stance=(-directionfactor*sdxdf)>1;
 [sstance,TF] = rmoutliers(double(stance),'movmedian',5); %remove outliers in sliding window
 f2=f(~TF);
 sstance(end)=0;%  I make it go back down to 0 so that counts as a stride because then it's easy to just never count the last stride.
 offsetforgraphing=rand(1);%I offset the stride/stance so that I can look at multiple stride/stance at once and they don't overlap
 
-[pks,toestrike] = findpeaks(double(sstance),f2, 'MinPeakWidth',10,'MinPeakDistance',70); %used to find temporal measures %toestrike is frame
+[pks,toestrike] = findpeaks(double(sstance),f2, 'MinPeakWidth',5,'MinPeakDistance',50); %used to find temporal measures %toestrike is frame
+if spotcheck == 1
+    figure(1)
+    hold on
+    plot(f,sxdata/10,'Color',color,'DisplayName',[name,' /10']);
+    if graphfactor==1
+        plot(f,sdxdf,'Color',color*(2/3),'DisplayName',[name,' Derivative']);
+        plot(f2, (sstance-.1)*100+offsetforgraphing,'.','Color',color*(2.5/3),'DisplayName',[name,' stance']);
+        plot([toestrike,toestrike]',[(pks-1.1)*100-offsetforgraphing,(pks-.1)+100+offsetforgraphing]','Color',color*(2.2/3),'HandleVisibility','off');%toeoff 
+            plot(0,0,'Color',color,'DisplayName',[name,' toestrike']); %just for the legend info
+    end
+end
 if length(toestrike)<=1
     dutyfactor=nan; stridelength=nan;strides=nan;
-    numcycles=nan; datasnew=nan;percentfsnew=nan;
+    numcycles=0; datasnew=nan;percentfsnew=nan;
     dutyfactorStd=nan;stridelengthStd=nan;datasnewstd=nan;percentfsnewstd=nan;
     return
 end
 strides = [toestrike(1:end-1),toestrike(2:end)];
 stridelengthF= strides(:,2)-strides(:,1);
-[stridelengthF,stridelengthTF] = rmoutliers(stridelengthF,'median'); %remove outliers in sliding window
-strides=strides(~stridelengthTF,:);
-
+%[stridelengthF,stridelengthTF] = rmoutliers(stridelengthF,'median'); %remove outliers in sliding window
+%strides=strides(~stridelengthTF,:);
 
  if spotcheck == 1
     figure(1)
     hold on
-    %plot(f,xdata/10,'DisplayName',name);
-    plot(f,sxdata/10,'Color',color,'DisplayName',[name,' /10']);
-    %plot(f,psxdata/10,'DisplayName',[name,' smooth&pivoted/10']);
-    %plot(f,dxdf,'DisplayName',[name,' derivative']);
     if graphfactor==1
-        plot(f,sdxdf,'Color',color*(2/3),'DisplayName',[name,' Derivative']);
-        %plot(f,sddxdf*10,'Color',color*rand(1),'DisplayName',[name,' DoubleDerivative']);
-        %plot(f,(swing)*1500*offsetforgraphing,'.','DisplayName',[name,' swing']);
-        plot(f2, (sstance-.1)*100+offsetforgraphing,'.','Color',color*(2.5/3),'DisplayName',[name,' stance']);
-        plot([toestrike,toestrike]',[(pks-1.1)*100-offsetforgraphing,(pks-.1)+100+offsetforgraphing]','Color',color*(2.2/3),'HandleVisibility','off');%toeoff 
-            plot(0,0,'Color',color,'DisplayName',[name,' toestrike']); %just for the legend info
-        plot(strides',[(ones(size(stridelengthF))-1.1)*100-offsetforgraphing,ones(size(stridelengthF))*100+offsetforgraphing]','Color',color*(2.2/3),'HandleVisibility','off');%toeoff 
-
+       plot(strides',[(ones(size(stridelengthF))-1.1)*100-offsetforgraphing,ones(size(stridelengthF))*100+offsetforgraphing]','Color',color*(2.2/3),'HandleVisibility','off');%toeoff 
     end
  end
  
