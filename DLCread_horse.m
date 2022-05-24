@@ -2,7 +2,7 @@
 %clear variables;
 %clearvars -except output
 %scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue Data Set';
-scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\PAG Data\PAG Data';
+scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\2.3.22 files rerun\Old Files - Re-Run\hand select';
 
 %%
 files = dir(scipath);
@@ -28,10 +28,11 @@ d2 = designfilt('lowpassiir','FilterOrder',3,'HalfPowerFrequency',0.04,'DesignMe
 
 %counter, should be same as filenum.
 i=1;
-for filenum = 1:size(files, 1)
+for filenum = 2:size(files, 1)
+    try
     i=filenum;
     close all
-    spotcheck = 0; %round(rand(1)*rand(1)); %Loud or quiet - do you want it to graph stuff.
+    spotcheck = 1; %round(rand(1)*rand(1)); %Loud or quiet - do you want it to graph stuff.
     pausevalue = 0; %if I want to pause after graphing each few lines. Otherwise it graphs all quick.
     %% import excel files
     myfile = files(filenum).name
@@ -328,7 +329,8 @@ for filenum = 1:size(files, 1)
     horseReqOut(i).speedStd = output(i).velocity.std;
     horseReqOut(i).AngleAvg = mean(output(i).HT_HM_HH.y.avg);
     horseReqOut(i).AngleStd = std(output(i).HT_HM_HH.y.avg);
-    
+    end
+
 end
 allDone = 'Yay!'
 
@@ -537,7 +539,7 @@ function [avnwinstrides, avnwinfs, avwinstridesSTDEV,avwinfsSTDEV] = avgforstrid
                 end
                 nwinstrides{n} = [nwinstrides{n}, nwinnm];%
                 nwinfs{n}      = [     nwinfs{n},nwinfnm];%
-                weights{n}     = [    weights{n},0.5*ones(size(nwinnm))];%don't care abt these points
+                wei  ghts{n}     = [    weights{n},0.5*ones(size(nwinnm))];%don't care abt these points
                 %alternative - make winsize higher? or include 2 bins for this point?
             end
             if sum([size(nwinstrides{n})==size(nwinfs{n}),size(nwinstrides{n})==size(weights{n}),-4])
