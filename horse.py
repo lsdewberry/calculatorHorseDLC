@@ -29,39 +29,41 @@ class MainWindow(qtw.QWidget):
         outerLayout.addLayout(graphLayout)
         self.setLayout(outerLayout)
 
-        over_label = qtw.QLabel("Horsey!!")
-        over_label.setFont(qtg.QFont(''))
-        videoLayout.addWidget(over_label)
+        self.over_label = qtw.QLabel("Horsey!!")
+        self.over_label.setFont(qtg.QFont(''))
+        videoLayout.addWidget(self.over_label)
 
-        toggle_skeleton = qtw.QPushButton("Toggle Skeleton Overlay",
-            clicked = lambda: pressed())
-        videoLayout.addWidget(toggle_skeleton)
+        self.toggle_skeleton = qtw.QPushButton("Toggle Skeleton Overlay")
+        self.toggle_skeleton.setCheckable(True)
+        self.toggle_skeleton.toggle()
+        self.toggle_skeleton.clicked.connect(self.pressed)
+        videoLayout.addWidget(self.toggle_skeleton)
         
-        horse_pic = qtw.QLabel()
-        horsemap = qtg.QPixmap('horse.jpg')
-        skeletonmap = qtg.QPixmap('horse-skeleton.jpg')
-        horse_pic.setPixmap(skeletonmap)
-        videoLayout.addWidget(horse_pic)
+        self.horse_pic = qtw.QLabel()
+        self.horsemap = qtg.QPixmap('horse.jpg')
+        self.skeletonmap = qtg.QPixmap('horse-skeleton.jpg')
+        self.horse_pic.setPixmap(self.horsemap)
+        videoLayout.addWidget(self.horse_pic)
 
-        over_label = qtw.QLabel("Ankle Position by Time")
-        over_label.setFont(qtg.QFont(''))
-        graphLayout.addWidget(over_label)
+        self.graph_label = qtw.QLabel("Ankle Position by Time")
+        self.graph_label.setFont(qtg.QFont(''))
+        graphLayout.addWidget(self.graph_label)
         
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
-        sc = MplCanvas(self, width=5, height=4, dpi=100)
-        sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
-        graphLayout.addWidget(sc)
-
-        #Button Functionality
-        def pressed():
-            if horse_pic.pixmap is horsemap:
-                horse_pic.setPixmap(skeletonmap)
-            else:
-                horse_pic.setPixmap(horsemap)
+        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
+        graphLayout.addWidget(self.sc)
 
         self.update()
         self.show()
+
+    #Button Functionality
+    def pressed(self):
+        if self.toggle_skeleton.isChecked():
+            self.horse_pic.setPixmap(self.skeletonmap)
+        else:
+            self.horse_pic.setPixmap(self.horsemap)
 
 #Initialize
 app = qtw.QApplication([])
