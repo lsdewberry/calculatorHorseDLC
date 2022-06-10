@@ -6,17 +6,17 @@ from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtGui import QIcon, QPalette
 from PyQt5.QtCore import Qt, QUrl
 
-class Window(QWidget):
+class VideoPlayer(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Media Player")
-        self.setGeometry(350, 100, 700, 500)
+        #self.setWindowTitle("Media Player")
+        #self.setFixedSize(1920, 1080)
         #self.setWindowIcon(QIcon('player.png'))
 
-        pal = self.palette()
+        #pal = self.palette()
         
-        self.setPalette(pal)
+        #self.setPalette(pal)
 
 
         self.init_ui()
@@ -58,12 +58,12 @@ class Window(QWidget):
         hboxLayout.addWidget(self.playBtn)
 
         #create vbox layout
-        vboxLayout = QVBoxLayout()
-        vboxLayout.addWidget(videowidget)
-        vboxLayout.addLayout(hboxLayout)
-        vboxLayout.addWidget(self.label)
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(videowidget)
+        mainLayout.addLayout(hboxLayout)
+        mainLayout.addWidget(self.label)
 
-        self.setLayout(vboxLayout)
+        self.setLayout(mainLayout)
         self.mediaPlayer.setVideoOutput(videowidget)
 
         self.mediaPlayer.stateChanged.connect(self.mediastate_changed)
@@ -97,9 +97,3 @@ class Window(QWidget):
 
     def set_position(self, position):
         self.mediaPlayer.setPosition(position)
-
-
-
-app = QApplication(sys.argv)
-window = Window()
-app.exec_()

@@ -10,14 +10,7 @@ import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as qtg
 
 import videoplayer as vid
-
-
-class MplCanvas(FigureCanvasQTAgg):
-
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+import grapher
 
 class MainWindow(qtw.QWidget):
     def __init__(self):
@@ -55,18 +48,12 @@ class MainWindow(qtw.QWidget):
         self.horse_pic.setPixmap(self.horsemap)
         videoLayout.addWidget(self.horse_pic)
         '''
-
-        self.graph_label = qtw.QLabel("Ankle Position by Time")
-        self.graph_label.setFont(qtg.QFont(''))
-        self.graph_label.setFixedHeight(50)
-        graphLayout.addWidget(self.graph_label)
         
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        self.sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
-        self.sc.setMinimumSize(480, 270)
-        graphLayout.addWidget(self.sc)
+        self.graph = grapher.DataDisplay()
+        self.graph.setMinimumSize(480, 270)
+        graphLayout.addWidget(self.graph)
 
         self.update()
         self.show()

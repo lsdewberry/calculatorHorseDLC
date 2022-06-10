@@ -22,7 +22,7 @@ class DataDisplay(qtw.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Horse Data Visualization Tool")
+        #self.setWindowTitle("Horse Data Visualization Tool")
         graphLayout = qtw.QVBoxLayout()
 
 
@@ -35,17 +35,25 @@ class DataDisplay(qtw.QWidget):
         
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.graph = MplCanvas(self, width=5, height=4, dpi=100)
 
         frame = []
         yPos = []
         with open('C0213DLC_resnet50_NewSkeletonMay27shuffle1_1030000.csv', 'r') as csvfile:
             lines = csv.reader(csvfile, delimiter=',')
             for row in lines:
+                try:
+                    frame.append(float(row[0])) #append the numeric values
+                    yPos.append(float(row[2]))
+                except:
+                    pass #ignore the nonnumeric values
 
-        self.sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
-        self.sc.setMinimumSize(480, 270)
-        graphLayout.addWidget(self.sc)
+        self.graph.axes.plot(frame, yPos, label = "Right Front Hoof")
+        self.graph.axes.legend()
+        #self.graph.axes._label('Frame')
+        #self.graph.ylabel("Y Position")
+        self.graph.setMinimumSize(480, 270)
+        graphLayout.addWidget(self.graph)
 
         self.update()
         self.show()
@@ -55,8 +63,3 @@ class DataDisplay(qtw.QWidget):
         pass
 
 #Initialize
-app = qtw.QApplication([])
-mw = DataDisplay()
-
-#Run App
-app.exec_()
