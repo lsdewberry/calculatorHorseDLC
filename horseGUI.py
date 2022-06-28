@@ -12,6 +12,7 @@ class MainWindow(qtw.QWidget):
         super().__init__()
 
         self.setWindowTitle("Horse Data Visualization Tool")
+        self.setWindowIcon(qtg.QIcon('window_icon.png'))
         
         self.videoplayer = vid.VideoPlayer()
         self.videoplayer.setMinimumSize(480,270)
@@ -19,6 +20,7 @@ class MainWindow(qtw.QWidget):
         self.graph = grapher.DataDisplay()
         self.graph.setMinimumSize(480, 270)
 
+        #ui feature to have resizeable widgets
         splitter = qtw.QSplitter()
         splitter.addWidget(self.videoplayer)
         splitter.addWidget(self.graph)
@@ -27,8 +29,14 @@ class MainWindow(qtw.QWidget):
         outerLayout.addWidget(splitter)
         self.setLayout(outerLayout)
 
+        #supports syncronized scrubbing of graph alongside video
+        self.videoplayer.mediaPlayer.positionChanged.connect(self.graph.video_position_changed)
+        self.videoplayer.mediaPlayer.durationChanged.connect(self.graph.video_duration_changed)
+
         self.update()
         self.show()
+    #def move_line(self, position):
+    #   self.graph.axes
 
 
 #Initialize

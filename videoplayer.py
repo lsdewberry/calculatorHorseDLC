@@ -1,4 +1,6 @@
+from multiprocessing.dummy import current_process
 from tkinter import HORIZONTAL
+from turtle import pos
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QStyle, QSizePolicy, QFileDialog
 import sys
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -10,16 +12,13 @@ class VideoPlayer(QWidget):
     def __init__(self):
         super().__init__()
 
-        #self.setWindowTitle("Media Player")
-        #self.setFixedSize(1920, 1080)
         #self.setWindowIcon(QIcon('player.png'))
-
-        #pal = self.palette()
-        
-        #self.setPalette(pal)
-
-
         self.init_ui()
+        
+        #member variables to hold video info
+        self.duration = 0
+        self.position = 0
+
         self.show()
 
     def init_ui(self):
@@ -47,6 +46,8 @@ class VideoPlayer(QWidget):
         #create label
         self.label = QLabel()
         self.label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.labelString = "{} ms / {} ms"
+        self.label.setText(self.labelString)
 
         #create hbox layout
         hboxLayout = QHBoxLayout()
@@ -91,9 +92,15 @@ class VideoPlayer(QWidget):
 
     def position_changed(self, position):
         self.slider.setValue(position)
-    
+        self.position = position
+        currPosDur = self.labelString.format(self.position, self.duration)
+        self.label.setText(currPosDur)
+  
     def duration_changed(self, duration):
         self.slider.setRange(0, duration)
+        self.duration = duration
+        currPosDur = self.labelString.format(self.position, self.duration)
+        self.label.setText(currPosDur)
 
     def set_position(self, position):
         self.mediaPlayer.setPosition(position)
