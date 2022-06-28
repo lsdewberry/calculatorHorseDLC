@@ -19,6 +19,7 @@ class MainWindow(qtw.QWidget):
         
         self.graph = grapher.DataDisplay()
         self.graph.setMinimumSize(480, 270)
+        self.videoplayer.set_graph_reference(self.graph)
 
         #ui feature to have resizeable widgets
         splitter = qtw.QSplitter()
@@ -32,6 +33,8 @@ class MainWindow(qtw.QWidget):
         #supports syncronized scrubbing of graph alongside video
         self.videoplayer.mediaPlayer.positionChanged.connect(self.graph.video_position_changed)
         self.videoplayer.mediaPlayer.durationChanged.connect(self.graph.video_duration_changed)
+        #reverse connection - clicking on graph shifts video frame
+        self.graph.graph.mpl_connect('button_press_event', self.videoplayer.click_graph)
 
         self.update()
         self.show()

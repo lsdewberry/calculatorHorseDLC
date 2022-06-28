@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from multiprocessing.dummy import current_process
 from tkinter import HORIZONTAL
 from turtle import pos
@@ -7,6 +8,8 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtGui import QIcon, QPalette
 from PyQt5.QtCore import Qt, QUrl
+
+import grapher
 
 class VideoPlayer(QWidget):
     def __init__(self):
@@ -18,6 +21,7 @@ class VideoPlayer(QWidget):
         #member variables to hold video info
         self.duration = 0
         self.position = 0
+        self.graph_reference = NULL
 
         self.show()
 
@@ -71,6 +75,9 @@ class VideoPlayer(QWidget):
         self.mediaPlayer.positionChanged.connect(self.position_changed)
         self.mediaPlayer.durationChanged.connect(self.duration_changed)
 
+    def set_graph_reference(self, graph: grapher.DataDisplay):
+        self.graph_reference = graph
+
     def open_file(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Open Video")
 
@@ -104,3 +111,10 @@ class VideoPlayer(QWidget):
 
     def set_position(self, position):
         self.mediaPlayer.setPosition(position)
+
+    def click_graph(self, event):
+        if event.inaxes != self.graph_reference.graph.axes: return
+        proportion = event.xdata / float(self.graph_reference.num_frames)
+        position = proportion * self.duration
+        self.position_changed(int(position))
+        self.set_position(int(position))

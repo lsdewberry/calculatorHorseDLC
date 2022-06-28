@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+from matplotlib.axis import Axis
 
 import csv
 
@@ -23,7 +24,7 @@ class DataDisplay(qtw.QWidget):
         super().__init__()
 
         self.num_frames = 0
-        self.video_duration = 1 #prevents a divde by zero error when video_position_changed initially executes
+        self.video_duration = 1 #prevents a divide by zero error when video_position_changed initially executes
 
         self.init_ui()
         self.show()
@@ -41,6 +42,8 @@ class DataDisplay(qtw.QWidget):
         # Create the maptlotlib FigureCanvas object,
         self.graph = MplCanvas(self, width=5, height=4, dpi=100)
         self.graph.setMinimumSize(480, 270)
+        self.graph.mpl_connect('button_press_event', self.click_graph)
+        self.graph.mpl_connect('scroll_event', self.zoom)
 
         #add widgets to layout
         graphLayout = qtw.QVBoxLayout()
@@ -88,3 +91,35 @@ class DataDisplay(qtw.QWidget):
     #Store the duration of video in graph object, supports vertical line scrubbing function.
     def video_duration_changed(self, duration):
         self.video_duration = duration
+
+    def click_graph(self, event):
+        if event.inaxes != self.graph.axes: return
+        #print("X: ", event.xdata)
+        #print("Y: ", event.ydata)
+        if self.graph.axes.lines:
+            self.graph.axes.lines.pop()
+            self.graph.axes.axvline(x = event.xdata, color = 'r', label = 'axvline - full height')
+            self.graph.draw_idle()
+        
+    def zoom(self, event):
+        cur_xlim = self.graph.axes.get_xlim()
+        #cur_ylim = self.graph.axes.get_ylim()
+        cur_xrange = (cur_xlim[1] - cur_xlim[0])*.5
+        #cur_yrange = (cur_ylim[1] - cur_ylim[0])*.5
+        xdata = event.xdata # get event x location
+        #ydata = event.ydata # get event y location
+        if event.button == 'up':
+            # deal with zoom in
+            scale_factor = 1/2.0
+        elif event.button == 'down':
+            # deal with zoom out
+            scale_factor = 2.0
+        else:
+            # deal with something that should never happen
+            scale_factor = 1
+        # set new limits
+        self.graph.axes.set_xlim([xdata - cur_xrange*scale_factor,
+                     xdata + cur_xrange*scale_factor])
+        #self.graph.axes.set_ylim([ydata - cur_yrange*scale_factor,
+                     #ydata + cur_yrange*scale_factor])
+        self.graph.draw_idle()
