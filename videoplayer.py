@@ -18,7 +18,7 @@ class VideoPlayer(QWidget):
         self.init_ui()
         
         #member variables to hold video info
-        self.duration = 0
+        self.duration = 1
         self.position = 0
         self.graph_reference = None
 
@@ -100,15 +100,19 @@ class VideoPlayer(QWidget):
         self.slider.setValue(position)
         self.position = position
         if self.graph_reference is not None:
-            currFrame = self.labelString.format(self.position, self.graph_reference.num_frames - 1)
-            self.label.setText(currFrame)
+            proportion = position / self.duration
+            frame = int(proportion * self.graph_reference.num_frames)
+            currFrameString = self.labelString.format(frame, self.graph_reference.num_frames - 1)
+            self.label.setText(currFrameString)
   
     def duration_changed(self, duration):
         self.slider.setRange(0, duration)
         self.duration = duration
         if self.graph_reference is not None:
-            currFrame = self.labelString.format(self.position, self.graph_reference.num_frames - 1)
-            self.label.setText(currFrame)
+            proportion = self.position / duration
+            frame = int(proportion * self.graph_reference.num_frames)
+            currFrameString = self.labelString.format(frame, self.graph_reference.num_frames - 1)
+            self.label.setText(currFrameString)
 
     def set_position(self, position):
         self.mediaPlayer.setPosition(position)

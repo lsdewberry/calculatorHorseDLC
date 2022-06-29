@@ -60,19 +60,21 @@ class DataDisplay(qtw.QWidget):
 
         if filename:
             frames = []
+            xPos = []
             yPos = []
             with open(filename, 'r') as csvfile:
                 lines = csv.reader(csvfile, delimiter=',')
                 for row in lines:
                     try:
                         frames.append(float(row[0])) #append the numeric values
+                        xPos.append(float(row[1]))
                         yPos.append(float(row[2]))
                     except:
                         pass #ignore the nonnumeric values
-            
             self.num_frames = len(frames)
             self.plot.axes.cla()
-            self.plot.axes.plot(frames, yPos, label = "Right Front Hoof")
+            self.plot.axes.plot(frames, xPos, label = "Right Front Hoof X")
+            self.plot.axes.plot(frames, yPos, label = "Right Front Hoof Y")
             self.plot.axes.legend()
             self.plot.axes.margins(x = 0)
             self.plot.axes.axvline(x = 0, color = 'r', label = 'axvline - full height')
@@ -114,10 +116,10 @@ class DataDisplay(qtw.QWidget):
         #ydata = event.ydata # get event y location
         if event.button == 'up':
             # deal with zoom in
-            scale_factor = 1/2.0 # <-------- change this to change scale of zoom
+            scale_factor = 1/1.5 # <-------- change this to change scale of zoom
         elif event.button == 'down':
             # deal with zoom out
-            scale_factor = 2.0
+            scale_factor = 1.5
         else:
             # deal with something that should never happen
             scale_factor = 1

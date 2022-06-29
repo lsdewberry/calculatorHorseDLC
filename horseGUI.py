@@ -12,7 +12,7 @@ class MainWindow(qtw.QWidget):
         super().__init__()
 
         self.setWindowTitle("Horse Data Visualization Tool")
-        self.setWindowIcon(qtg.QIcon('window_icon.png'))
+        #self.setWindowIcon(qtg.QIcon('window_icon.png'))
         
         self.videoplayer = vid.VideoPlayer()
         self.videoplayer.setMinimumSize(480,270)
