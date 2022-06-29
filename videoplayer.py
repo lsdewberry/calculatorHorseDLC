@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 from multiprocessing.dummy import current_process
 from tkinter import HORIZONTAL
 from turtle import pos
@@ -21,7 +20,7 @@ class VideoPlayer(QWidget):
         #member variables to hold video info
         self.duration = 0
         self.position = 0
-        self.graph_reference = NULL
+        self.graph_reference = None
 
         self.show()
 
@@ -50,7 +49,7 @@ class VideoPlayer(QWidget):
         #create label
         self.label = QLabel()
         self.label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
-        self.labelString = "{} ms / {} ms"
+        self.labelString = "Frame: {} / {}"
         self.label.setText(self.labelString)
 
         #create hbox layout
@@ -100,20 +99,23 @@ class VideoPlayer(QWidget):
     def position_changed(self, position):
         self.slider.setValue(position)
         self.position = position
-        currPosDur = self.labelString.format(self.position, self.duration)
-        self.label.setText(currPosDur)
+        if self.graph_reference is not None:
+            currFrame = self.labelString.format(self.position, self.graph_reference.num_frames - 1)
+            self.label.setText(currFrame)
   
     def duration_changed(self, duration):
         self.slider.setRange(0, duration)
         self.duration = duration
-        currPosDur = self.labelString.format(self.position, self.duration)
-        self.label.setText(currPosDur)
+        if self.graph_reference is not None:
+            currFrame = self.labelString.format(self.position, self.graph_reference.num_frames - 1)
+            self.label.setText(currFrame)
 
     def set_position(self, position):
         self.mediaPlayer.setPosition(position)
+        #print("video_set_position")
 
     def click_graph(self, event):
-        if event.inaxes != self.graph_reference.graph.axes: return
+        if event.inaxes != self.graph_reference.plot.axes: return
         proportion = event.xdata / float(self.graph_reference.num_frames)
         position = proportion * self.duration
         self.position_changed(int(position))
