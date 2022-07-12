@@ -120,6 +120,7 @@ class VideoPlayer(QWidget):
 
     def click_graph(self, event):
         if event.inaxes != self.graph_reference.plot.axes: return
+        
         proportion = event.xdata / float(self.graph_reference.num_frames)
         position = proportion * self.duration
         self.position_changed(int(position))
