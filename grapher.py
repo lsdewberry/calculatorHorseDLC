@@ -27,6 +27,7 @@ class DataDisplay(qtw.QWidget):
     def __init__(self):
         super().__init__()
 
+        self.mouse_hold = False #bool for mouse being currently held down
         self.num_frames = 0
         self.current_frame = 0 #stores current frame for vertical line plotting
         self.video_duration = 1 #prevents a divide by zero error when video_position_changed initially executes
@@ -52,6 +53,8 @@ class DataDisplay(qtw.QWidget):
         self.plot.setMinimumSize(480, 270)
         self.plot.mpl_connect('button_press_event', self.click_graph)
         self.plot.mpl_connect('scroll_event', self.zoom)
+        self.plot.mpl_connect('button_release_event', self.release_graph)
+        self.plot.mpl_connect('motion_notify_event', self.move_mouse)
 
         #create a listWidget to control plotted variables
         self.listWidget = qtw.QListWidget()
@@ -133,7 +136,9 @@ class DataDisplay(qtw.QWidget):
 
         self.plot.draw_idle()
 
+    #=======GRAPH INTERACTIVITY========
     def click_graph(self, event):
+        self.mouse_hold = True
         if event.inaxes != self.plot.axes: return
         if self.plot.axes.lines:
             self.plot.axes.lines.pop()
@@ -141,7 +146,19 @@ class DataDisplay(qtw.QWidget):
             self.plot.axes.axvline(x = self.current_frame, color = 'r', label = 'current frame')
             self.plot.draw_idle()
             #print("grapher_click_graph")
-        
+    
+    def release_graph(self, event):
+        self.mouse_hold = False
+    
+    def move_mouse(self, event):
+        if self.mouse_hold:
+            if event.inaxes != self.plot.axes: return
+            if self.plot.axes.lines:
+                self.plot.axes.lines.pop()
+                self.current_frame = int(event.xdata)
+                self.plot.axes.axvline(x = self.current_frame, color = 'r', label = 'current frame')
+                self.plot.draw_idle()
+
     def zoom(self, event):
         cur_xlim = self.plot.axes.get_xlim()
         #cur_ylim = self.graph.axes.get_ylim()

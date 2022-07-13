@@ -36,6 +36,7 @@ class MainWindow(qtw.QWidget):
         self.videoplayer.mediaPlayer.durationChanged.connect(self.graph.video_duration_changed)
         #reverse connection - clicking on graph shifts video frame
         self.graph.plot.mpl_connect('button_press_event', self.videoplayer.click_graph)
+        self.graph.plot.mpl_connect('motion_notify_event', self.videoplayer.move_mouse_graph)
 
         self.showMaximized()
 

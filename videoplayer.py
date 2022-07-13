@@ -125,3 +125,12 @@ class VideoPlayer(QWidget):
         position = proportion * self.duration
         self.position_changed(int(position))
         self.set_position(int(position))
+    
+    def move_mouse_graph(self, event):
+        if self.graph_reference.mouse_hold:
+            if event.inaxes != self.graph_reference.plot.axes: return
+        
+            proportion = event.xdata / float(self.graph_reference.num_frames)
+            position = proportion * self.duration
+            self.position_changed(int(position))
+            self.set_position(int(position))
