@@ -1,4 +1,5 @@
 from cProfile import label
+from cmath import inf
 import sys
 from xml.etree.ElementTree import tostring
 
@@ -27,6 +28,7 @@ class DataDisplay(qtw.QWidget):
         super().__init__()
 
         self.num_frames = 0
+        self.current_frame = 0 #stores current frame for vertical line plotting
         self.video_duration = 1 #prevents a divide by zero error when video_position_changed initially executes
 
         #create an empty data frame using pandas API
@@ -51,16 +53,19 @@ class DataDisplay(qtw.QWidget):
         self.plot.mpl_connect('button_press_event', self.click_graph)
         self.plot.mpl_connect('scroll_event', self.zoom)
 
-        #create a combo-box to control plotted variables
-        self.cb = qtw.QComboBox()
-        self.cb.activated[str].connect(self.change_plotted_data)
+        #create a listWidget to control plotted variables
+        self.listWidget = qtw.QListWidget()
+        self.listWidget.setMaximumWidth(200)
+        self.listWidget.setSelectionMode(2) #2 == MultiSelection
+        self.listWidget.itemClicked.connect(self.change_plotted_data)
 
         #add widgets to layout
-        graphLayout = qtw.QVBoxLayout()
-        #graphLayout.addWidget(self.graph_label)
-        graphLayout.addWidget(self.plot)
-        graphLayout.addWidget(self.cb)
-        graphLayout.addWidget(self.openBtn)
+        graphLayout = qtw.QHBoxLayout()
+        plotLayout = qtw.QVBoxLayout()
+        plotLayout.addWidget(self.plot)
+        plotLayout.addWidget(self.openBtn)
+        graphLayout.addLayout(plotLayout)
+        graphLayout.addWidget(self.listWidget)
         self.setLayout(graphLayout)
 
 
@@ -86,8 +91,9 @@ class DataDisplay(qtw.QWidget):
             for col in self.data_frame.columns:
                 #convert dtype from object to float64
                 self.data_frame[col] = pd.to_numeric(self.data_frame[col],errors = 'coerce')
-                #add column label to combo box
-                self.cb.addItem(str(col))
+                #add column label to listWidget
+                item = qtw.QListWidgetItem(str(col))
+                self.listWidget.addItem(item)
             
             self.num_frames = len(self.data_frame.index)
             self.plot.axes.cla()
@@ -98,48 +104,41 @@ class DataDisplay(qtw.QWidget):
             self.plot.axes.margins(x = 0)
             self.plot.axes.axvline(x = 0, color = 'r', label = 'current frame')
             
-            #self.cb.addItems(self.data_frame.columns)
             self.plot.draw_idle()
     
     #switch the data plotted on the graph
-    def change_plotted_data(self, text):
-        self.plot.axes.lines.pop(0)
-        self.plot.axes.plot(self.data_frame.loc[:,'frame_number'], self.data_frame.loc[:, text], label = text)
-        self.plot.axes.lines[0], self.plot.axes.lines[1] = self.plot.axes.lines[1], self.plot.axes.lines[0]
-        self.plot.axes.legend()
+    def change_plotted_data(self):
+        while self.plot.axes.lines:
+            self.plot.axes.lines.pop()
+        
+        items = self.listWidget.selectedItems()
+        #grab max/min y to set plot bounds
+        miny, maxy = 0, 1 #initialized for case of empty plot
+        if items:
+            miny = inf
+            maxy = -inf
 
+        for i in items:
+            self.plot.axes.plot(self.data_frame.loc[:,'frame_number'], self.data_frame.loc[:, i.text()], label = i.text())
+            if (miny > min(self.data_frame.loc[:, i.text()])):
+                miny = min(self.data_frame.loc[:, i.text()])
+            if (maxy < max(self.data_frame.loc[:, i.text()])):
+                maxy = max(self.data_frame.loc[:, i.text()])
+        
+        self.plot.axes.axvline(x = self.current_frame, color = 'r', label = 'current frame')
+        self.plot.axes.legend()
         #reset y axis range
-        miny = min(self.data_frame.loc[:, text])
-        maxy = max(self.data_frame.loc[:, text])
         dy = (maxy - miny)*0.1
         self.plot.axes.set_ylim(miny-dy, maxy+dy)
 
         self.plot.draw_idle()
 
-    #Slide a vertical line along the graph as the video frame changes
-    def video_position_changed(self, position):
-
-        #convert from a video position in milliseconds to a frame number
-        proportion = position / float(self.video_duration)
-        frame = int(proportion * self.num_frames)
-
-        if self.plot.axes.lines:
-            self.plot.axes.lines.pop()
-            self.plot.axes.axvline(x = frame, color = 'r', label = 'current frame')
-            self.plot.draw_idle()
-            #print("grapher_vid_pos_change")
-
-    #Store the duration of video in graph object, supports vertical line scrubbing function.
-    def video_duration_changed(self, duration):
-        self.video_duration = duration
-
     def click_graph(self, event):
         if event.inaxes != self.plot.axes: return
-        #print("X: ", event.xdata)
-        #print("Y: ", event.ydata)
         if self.plot.axes.lines:
             self.plot.axes.lines.pop()
-            self.plot.axes.axvline(x = event.xdata, color = 'r', label = 'current frame')
+            self.current_frame = int(event.xdata)
+            self.plot.axes.axvline(x = self.current_frame, color = 'r', label = 'current frame')
             self.plot.draw_idle()
             #print("grapher_click_graph")
         
@@ -168,3 +167,21 @@ class DataDisplay(qtw.QWidget):
         #self.graph.axes.set_ylim([ydata - cur_yrange*scale_factor,
                      #ydata + cur_yrange*scale_factor])
         self.plot.draw_idle()
+
+    #========VIDEO FUNCTIONALITY=========
+    #Slide a vertical line along the graph as the video frame changes
+    def video_position_changed(self, position):
+
+        #convert from a video position in milliseconds to a frame number
+        proportion = position / float(self.video_duration)
+        frame = int(proportion * self.num_frames)
+        self.current_frame = frame
+
+        if self.plot.axes.lines:
+            self.plot.axes.lines.pop()
+            self.plot.axes.axvline(x = self.current_frame, color = 'r', label = 'current frame')
+            self.plot.draw_idle()
+
+    #Store the duration of video in graph object, supports vertical line scrubbing function.
+    def video_duration_changed(self, duration):
+        self.video_duration = duration

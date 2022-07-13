@@ -37,6 +37,8 @@ class MainWindow(qtw.QWidget):
         #reverse connection - clicking on graph shifts video frame
         self.graph.plot.mpl_connect('button_press_event', self.videoplayer.click_graph)
 
+        self.showMaximized()
+
         self.update()
         self.show()
     #def move_line(self, position):
