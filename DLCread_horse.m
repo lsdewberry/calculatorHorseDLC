@@ -2,7 +2,6 @@
 %clear variables;
 %clearvars -except output
 %scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue Data Set';
-scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\2.3.22 files rerun\Old Files - Re-Run\hand select';
 
 %%
 files = dir(scipath);
@@ -28,20 +27,24 @@ d2 = designfilt('lowpassiir','FilterOrder',3,'HalfPowerFrequency',0.04,'DesignMe
 
 %counter, should be same as filenum.
 i=1;
-for filenum = 2:size(files, 1)
-    try
+for filenum = 1:size(files, 1)
     i=filenum;
     close all
-    spotcheck = 1; %round(rand(1)*rand(1)); %Loud or quiet - do you want it to graph stuff.
+    spotcheck = 0; %round(rand(1)*rand(1)); %Loud or quiet - do you want it to graph stuff.
     pausevalue = 0; %if I want to pause after graphing each few lines. Otherwise it graphs all quick.
     %% import excel files
     myfile = files(filenum).name
+    disp(['filenum ',num2str(filenum), ': ',myfile]);
     output(i).filname = myfile; %I will have a massive 'output' structure at the end of this. I really need to initialize output tbh.
     scifile = [scipath, '\', myfile];
      [frame, RightForex, RightForey,   RightForel,RightHindToex,RightHindToey,RightHindToel,RightHindHeelx,RightHindHeely,RightHindHeell,rightFfetlockx,rightFfetlocky,rightFfetlockl,RightHindMidx, RightHindMidy, RightHindMidl, rightkneex,rightkneey,rightkneel,  handlerRfootx,handlerRfooty,handlerRfootl,handlerRkneex, handlerRkneey, handlerRkneel, nosex, nosey,      nosel,pollx,polly, polll,    Backx,    Backy,    Backl,shoulderx,shouldery,  shoulderl,elbowx,elbowy,elbowl,croupx, croupy, croupl,hipx, hipy, hipl, stiflex,stifley,stiflel, TailBasex,      TailBasey,        TailBasel,       LeftForex,LeftForey,   LeftForel,LeftHindToex,LeftHindToey,LeftHindToel,LeftHindHeelx,LeftHindHeely,LeftHindHeell, leftFfetlockx, leftFfetlocky, leftFfetlockl,LeftHindMidx, LeftHindMidy, LeftHindMidl, leftkneex,leftkneey,leftkneel, handlerLfootx,handlerLfooty,handlerLfootl, handlerLkneex,handlerLkneey,handlerLkneel] = import_horse(scifile);
-
+    try
     %% find direction of travel using nose
     Nx= nosex(nosel>L); %filter by likelyhood
+    if length(Nx)<1
+        output(i).byEye="length(Nx)<1";
+        continue %stop doing this trial if there are no nose points
+    end
     if Nx(end)>Nx(1)
         direction = 'right'; %if the animal is going to the right, I trust its right paw
         directionfactor=-1; %used so I don't have a bimodal back angle distribution because of direction of travel
@@ -52,17 +55,6 @@ for filenum = 2:size(files, 1)
         error('direction?')
     end
     output(i).direction = direction;
-    
-    %% level of floor - could improve this by making it a line off of two points -  min in 1st half and min in 2nd half of data
-    floor = [min(-LeftForey(LeftForel>L)), min(-RightForey(RightForel>L))]; %in pixels. It's inverted because origin is top left for DLC data
-    if abs(floor(1)-floor(2))>5 
-        fprintf('floors too different :(')
-        floor = [floor, min(-RightHindToey(RightHindToel>L)), min(-LeftHindToey(LeftHindToel>L))]; %add more data points
-        floor = rmoutliers(floor); %remove any freak data points
-        floor = mean(floor); %take an average and try it (double check the ones that print floors to different')
-    else 
-        floor = mean(floor);
-    end
     
     %% setup figure
     if spotcheck == 1
@@ -100,13 +92,46 @@ for filenum = 2:size(files, 1)
     else
         error('direction?')
     end
-    
+    %% smoothing the lowest value Y things to try to find the floor from them
+    % Hind Toe smoothing
+    HTx = HindToeX(HindToeL>L); HTf=frame(HindToeL>L); color=colors(1,:); %hind toe x
+    HTy = (-HindToeY(HindToeL>L)); %y is inverted because origin is top left
+    [sHTx,sHTy,sHTf] = basiccmooth(HTx, HTy, HTf, d2);
+    %Hind midfoot smoothing
+    HMx= HindMidX(HindMidL>L); HMf=frame(HindMidL>L);
+    HMy= -HindMidY(HindMidL>L); 
+    [sHMx,sHMy,sHMf] = basiccmooth(HMx, HMy, HMf, d1);
+    %Hind Heel smoothing
+    HHx= HindHeelX(HindHeelL>L); HHf=frame(HindHeelL>L);
+    HHy = -HindHeelY(HindHeelL>L);
+    [sHHx,sHHy,sHHf] = basiccmooth(HHx, HHy, HHf, d1);%using og filter 
+    %% find floor
+     [floorfit] = floorfind(HTy,HMy,HHy);  
+    %% FSTO  
+    [output(i).Hdutyfactor.avg, frameStrideLength, output(i).numcycles, strides, output(i).Hdutyfactor.std,output(i).Hstridelength.std, output(i).byEye]=fsto(sHTx,sHTf, directionfactor,spotcheck, 1,[0 0 0], 'HT FSTO'); 
+    %% plotting
+    if size(strides,1)<1 || sum(sum((isnan(strides))))
+          output(i).numcycles     = output(i).numcycles;
+          if spotcheck
+            saveas(fig1,[myfile,'_fulltrial.png']);
+          end
+          i=i+1;
+          continue %go to next iteration of for loop because there aren't enough strides in this trial
+    end
+    %% stride x
+    % need to find stridelength in the x data based on strides which was
+    % found in f data
+    strideIndex=[];
+    for j=1:size(strides,1)
+    [~,strideIndex(j,1)] = min(abs(sHTf-strides(j,1)));
+    [~,strideIndex(j,2)] = min(abs(sHTf-strides(j,2)));
+    end
+    output(i).Hstridelength.avg = mean(abs(sHTx(strideIndex(:,1))-sHTx(strideIndex(:,2))));
+    output(i).Hstridelength.std =  std(abs(sHTx(strideIndex(:,1))-sHTx(strideIndex(:,2))));
+    stridesXstart=sHTx(unique(strideIndex));
     %% analysis of sided data
     %Hind heel
-    HHx = HindHeelX(HindHeelL>L); HHf=frame(HindHeelL>L); color=colors(1,:); %hind heel x
-    HHy = (-HindHeelY(HindHeelL>L))-floor; %y is inverted because origin is top left
-        [sHHx,sHHy,sHHf] = basiccmooth(HHx, HHy, HHf, d2);%using slightly more strict filter
-      [output(i).Hdutyfactor.avg, output(i).Hstridelength.avg, output(i).numcycles, ...
+   [output(i).Hdutyfactor.avg, output(i).Hstridelength.avg, output(i).numcycles, ...
           output(i).stridestance.y.avg, output(i).stridestance.f.avg, strides, ...
           output(i).Hdutyfactor.std,output(i).Hstridelength.std,...
           output(i).stridestance.y.std,output(i).stridestance.f.std] = pulloutXstuff(sHHx,sHHf,directionfactor,spotcheck,1,color,'HindHeelX');
@@ -117,10 +142,10 @@ for filenum = 2:size(files, 1)
           if spotcheck
             saveas(fig1,[myfile,'_fulltrial.png']);
           end
+          output(i).byEye='not enough strides';
           continue %go to next iteration of for loop because there aren't enough strides in this trial
       end
-        output(i).Hstridelength.avg = output(i).Hstridelength.avg*-directionfactor;
-      [output(i).HH.x.avg, output(i).HH.f.avg, output(i).HH.x.std,output(i).HH.f.std] = avgforstride (sHHx,sHHf, strides, 'x',spotcheck,color,'HindHeelX'); 
+       [output(i).HH.x.avg, output(i).HH.f.avg, output(i).HH.x.std,output(i).HH.f.std] = avgforstride (sHHx,sHHf, strides, 'x',spotcheck,color,'HindHeelX'); 
         if spotcheck & pausevalue
             pause
         end
@@ -492,6 +517,7 @@ function [avnwinstrides, avnwinfs, avwinstridesSTDEV,avwinfsSTDEV] = avgforstrid
     end
     %j
     if exist('winstrides', 'var')==0
+        err='winstrides doesnt exist???'
         pause
     end
     % msg=['testing sizes line 420, should be true: ',num2str(size(winstrides,2)==100/winsize)] %troubleshooting
@@ -503,7 +529,7 @@ function [avnwinstrides, avnwinfs, avwinstridesSTDEV,avwinfsSTDEV] = avgforstrid
         wins=winstrides(:,m);%select only bin m for all strides
         minps = min(cellfun('size',wins,1));
         if minps<=0
-            %msg=['need to increase winsize? winsize=',num2str(winsize)]
+            msg=['need to increase winsize? winsize=',num2str(winsize)]
             %or maybe exclude the stride missing the data?
             %could decide based on stride length outliers?
             minps=1;
@@ -539,7 +565,7 @@ function [avnwinstrides, avnwinfs, avwinstridesSTDEV,avwinfsSTDEV] = avgforstrid
                 end
                 nwinstrides{n} = [nwinstrides{n}, nwinnm];%
                 nwinfs{n}      = [     nwinfs{n},nwinfnm];%
-                wei  ghts{n}     = [    weights{n},0.5*ones(size(nwinnm))];%don't care abt these points
+                weights{n}     = [    weights{n},0.5*ones(size(nwinnm))];%don't care abt these points
                 %alternative - make winsize higher? or include 2 bins for this point?
             end
             if sum([size(nwinstrides{n})==size(nwinfs{n}),size(nwinstrides{n})==size(weights{n}),-4])

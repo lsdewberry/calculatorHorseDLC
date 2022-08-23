@@ -1,7 +1,8 @@
 %choose path
 %clear variables;
 %clearvars -except output
-scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue Data Set\FHP Int 2019';;
+scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue Data Set\FHP Int 2019';
+scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\7.19.22\Genotype_Angles';
 
 %%
 files = dir(scipath);
