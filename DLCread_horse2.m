@@ -1,13 +1,17 @@
 %choose path
 %clear variables;
 %clearvars -except output
-%scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue Data Set';
-%scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\fatigure data set 2\PAG Data\Fatigue_2.0\FHP_Int2022';
-scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\7.19.22\Genotype_Angles';
+
+%scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue_2.0\Fair_Hill2019';
+%scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue_2.0\FHP_Int2019';
+%scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue_2.0\FHP_Int2022';
+%scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue_2.0\Ocala_Int2019';
+scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\Fatigue_2.0\Red_Hills2020';
+%scipath = 'C:\Users\savan\OneDrive - University of Florida\LAB\horse\7.19.22\Genotype_Angles';
 
 %%
 files = dir(scipath);
-files = files(3:end);%should be 3
+files = files(3:end-1);%should be 3
 
  %pixeltocm=15; %this is a rough value used to calculate a rough velocity. The real pixtocm varied for each day.
 %framestosecs = 500/1; %frames/sec - I ended up just getting pixels/frame
@@ -29,18 +33,18 @@ d2 = designfilt('lowpassiir','FilterOrder',3,'HalfPowerFrequency',0.04,'DesignMe
 
 %counter, should be same as filenum.
 i=1;
-for filenum = 1:size(files, 1)
+for filenum = 1:size(files, 1)%select files to run
     i=filenum;
     close all
-    spotcheck = 1; %round(rand(1)*rand(1)); %Loud or quiet - do you want it to graph stuff.
+    spotcheck =1; %round(rand(1)*rand(1)); %Loud or quiet - do you want it to graph stuff.
     pausevalue = 0; %if I want to pause after graphing each few lines. Otherwise it graphs all quick.
     %% import excel files
     myfile = files(filenum).name
     disp(['filenum ',num2str(filenum), ': ',myfile]);
     output(i).filname = myfile; %I will have a massive 'output' structure at the end of this. I really need to initialize output tbh.
     scifile = [scipath, '\', myfile];
-     [frame, RightForex, RightForey,   RightForel,RightHindToex,RightHindToey,RightHindToel,RightHindHeelx,RightHindHeely,RightHindHeell,rightFfetlockx,rightFfetlocky,rightFfetlockl,RightHindMidx, RightHindMidy, RightHindMidl, rightkneex,rightkneey,rightkneel,  handlerRfootx,handlerRfooty,handlerRfootl,handlerRkneex, handlerRkneey, handlerRkneel, nosex, nosey,      nosel,pollx,polly, polll,    Backx,    Backy,    Backl,shoulderx,shouldery,  shoulderl,elbowx,elbowy,elbowl,croupx, croupy, croupl,hipx, hipy, hipl, stiflex,stifley,stiflel, TailBasex,      TailBasey,        TailBasel,       LeftForex,LeftForey,   LeftForel,LeftHindToex,LeftHindToey,LeftHindToel,LeftHindHeelx,LeftHindHeely,LeftHindHeell, leftFfetlockx, leftFfetlocky, leftFfetlockl,LeftHindMidx, LeftHindMidy, LeftHindMidl, leftkneex,leftkneey,leftkneel, handlerLfootx,handlerLfooty,handlerLfootl, handlerLkneex,handlerLkneey,handlerLkneel] = import_horse(scifile);
-    %try
+     [frame, RightForex, RightForey,   RightForel,RightHindHoofx,RightHindHoofy,RightHindHoofl,RightHindHockx,RightHindHocky,RightHindHockl,rightFfetlockx,rightFfetlocky,rightFfetlockl,RightHindFetlockx, RightHindFetlocky, RightHindFetlockl, rightkneex,rightkneey,rightkneel,  handlerRfootx,handlerRfooty,handlerRfootl,handlerRkneex, handlerRkneey, handlerRkneel, nosex, nosey,      nosel,pollx,polly, polll,    withersx,    withersy,    withersl,shoulderx,shouldery,  shoulderl,elbowx,elbowy,elbowl,croupx, croupy, croupl,hipx, hipy, hipl, stiflex,stifley,stiflel, TailBasex,      TailBasey,        TailBasel,       LeftForex,LeftForey,   LeftForel,LeftHindHoofx,LeftHindHoofy,LeftHindHoofl,LeftHindHockx,LeftHindHocky,LeftHindHockl, leftFfetlockx, leftFfetlocky, leftFfetlockl,LeftHindFetlockx, LeftHindFetlocky, LeftHindFetlockl, leftkneex,leftkneey,leftkneel, handlerLfootx,handlerLfooty,handlerLfootl, handlerLkneex,handlerLkneey,handlerLkneel] = import_horse(scifile);
+    try
     %% find direction of travel using nose
     Nx= nosex(nosel>L); %filter by likelyhood
     if length(Nx)<1
@@ -83,44 +87,52 @@ for filenum = 1:size(files, 1)
     if direction=='left ' 
         %im just going to rename variables
         ForeX = LeftForex;        ForeY = LeftForey;        ForeL = LeftForel;
-        HindToeX = LeftHindToex;  HindToeY = LeftHindToey;  HindToeL = LeftHindToel;
-        HindMidX = LeftHindMidx;  HindMidY = LeftHindMidy;  HindMidL = LeftHindMidl;
-        HindHeelX = LeftHindHeelx;HindHeelY = LeftHindHeely;HindHeelL = LeftHindHeell;
+        HindHoofX = LeftHindHoofx;  HindHoofY = LeftHindHoofy;  HindHoofL = LeftHindHoofl;
+        HindFetlockX = LeftHindFetlockx;  HindFetlockY = LeftHindFetlocky;  HindFetlockL = LeftHindFetlockl;
+        HindHockX = LeftHindHockx;HindHockY = LeftHindHocky;HindHockL = LeftHindHockl;
     elseif direction=='right'
         ForeX = RightForex;        ForeY = RightForey;        ForeL = RightForel;
-        HindToeX = RightHindToex;  HindToeY = RightHindToey;  HindToeL = RightHindToel;
-        HindMidX = RightHindMidx;  HindMidY = RightHindMidy;  HindMidL = RightHindMidl;
-        HindHeelX = RightHindHeelx;HindHeelY = RightHindHeely;HindHeelL = RightHindHeell;
+        HindHoofX = RightHindHoofx;  HindHoofY = RightHindHoofy;  HindHoofL = RightHindHoofl;
+        HindFetlockX = RightHindFetlockx;  HindFetlockY = RightHindFetlocky;  HindFetlockL = RightHindFetlockl;
+        HindHockX = RightHindHockx;HindHockY = RightHindHocky;HindHockL = RightHindHockl;
     else
         error('direction?')
     end
     %% smoothing the lowest value Y things to try to find the floor from them
     % Hind Toe smoothing
-    HTx = HindToeX(HindToeL>L); HTf=frame(HindToeL>L); color=colors(1,:); %hind toe x
-    HTy = (-HindToeY(HindToeL>L)); %y is inverted because origin is top left
-    [sHTx,sHTy,sHTf] = basiccmooth(HTx, HTy, HTf, d2);
+    HHoofx = HindHoofX(HindHoofL>L); HHooff=frame(HindHoofL>L); %hind toe x
+    HHoofy = (-HindHoofY(HindHoofL>L)); %y is inverted because origin is top left
+    [sHHoofx,sHHoofy,sHHooff] = basiccmooth(HHoofx, HHoofy, HHooff, d2);
     %Hind midfoot smoothing
-    HMx= HindMidX(HindMidL>L); HMf=frame(HindMidL>L);
-    HMy= -HindMidY(HindMidL>L); 
-    [sHMx,sHMy,sHMf] = basiccmooth(HMx, HMy, HMf, d1);
+    HFetlockx= HindFetlockX(HindFetlockL>L); HFetlockf=frame(HindFetlockL>L);
+    HFetlocky= -HindFetlockY(HindFetlockL>L); 
+    [sHFetlockx,sHFetlocky,sHFetlockf] = basiccmooth(HFetlockx, HFetlocky, HFetlockf, d1);
     %Hind Heel smoothing
-    HHx= HindHeelX(HindHeelL>L); HHf=frame(HindHeelL>L);
-    HHy = -HindHeelY(HindHeelL>L);
-    [sHHx,sHHy,sHHf] = basiccmooth(HHx, HHy, HHf, d1);%using og filter 
+    HHockx= HindHockX(HindHockL>L); HHf=frame(HindHockL>L);
+    HHocky = -HindHockY(HindHockL>L);
+    [sHHockx,sHHocky,sHHockf] = basiccmooth(HHockx, HHocky, HHf, d1);%using og filter 
     %fore foot smoothing
     Fx= ForeX(ForeL>L); Ff=frame(ForeL>L);
     Fy = -ForeY(ForeL>L);
     [sFx,sFy,sFf] = basiccmooth(Fx, Fy, Ff, d1);%using og filter 
     %% find floor
-     [floorfit] = floorfind(sHTy,sFy,sHTy); %dots that hit the floor for horse 
+     [floorfit] = floorfind(sHHoofy,sFy,sHHoofy); %dots that hit the floor for horse 
     %% FSTO  
-    [output(i).Hdutyfactor.avg, frameStrideLength, output(i).numcycles, strides, output(i).Hdutyfactor.std,output(i).Hstridelength.std, output(i).byEye]=fsto(sHHx,sHHf, directionfactor,spotcheck, 1,[0 0 0], 'HH FSTO'); 
-    %% plotting
-    if size(strides,1)<1 || sum(sum((isnan(strides))))
-          output(i).numcycles     = output(i).numcycles;
+    [output(i).Hdutyfactor.avg, frameStrideLength, output(i).numcycles, strides, output(i).Hdutyfactor.std,output(i).Hstridelength.std, output(i).byEye]=fsto(sHHockx,sHHockf, directionfactor,spotcheck, 1,[0 0 0], 'HHockX FSTO'); 
+    %% plot and abort if we didn't get any strides
+    if sum(sum(strides))==0 || sum(sum((isnan(strides))))
+          output(i).numcycles     = 0;
+          horseReqOut(i).fileName = output(i).filname;
+          horseReqOut(i).Direction = output(i).direction;
+          horseReqOut(i).numberofcycles = output(i).numcycles;
           if spotcheck
+              figure(1)
+            plot(sHHooff, sHHoofx/10,'DisplayName','HindHoofX/10')
+            plot(sHFetlockf,sHFetlockx/10,'DisplayName','HindFetlockX/10')
+            plot(sHHockf,sHHockx/10,'DisplayName','HindHockX/10')
             saveas(fig1,[myfile,'_fulltrial.png']);
           end
+          output(i).byEye='not enough strides';
           i=i+1;
           continue %go to next iteration of for loop because there aren't enough strides in this trial
     end
@@ -129,73 +141,63 @@ for filenum = 1:size(files, 1)
     % found in f data
     strideIndex=[];
     for j=1:size(strides,1)
-    [~,strideIndex(j,1)] = min(abs(sHTf-strides(j,1)));
-    [~,strideIndex(j,2)] = min(abs(sHTf-strides(j,2)));
+    [~,strideIndex(j,1)] = min(abs(sHHooff-strides(j,1)));
+    [~,strideIndex(j,2)] = min(abs(sHHooff-strides(j,2)));
     end
-    output(i).Hstridelength.avg = mean(abs(sHTx(strideIndex(:,1))-sHTx(strideIndex(:,2))));
-    output(i).Hstridelength.std =  std(abs(sHTx(strideIndex(:,1))-sHTx(strideIndex(:,2))));
-    stridesXstart=sHTx(unique(strideIndex));
-    %% putting into horseReqOut
-          if size(strides,1)<1 || sum(sum((isnan(strides))))
-          horseReqOut(i).fileName = output(i).filname;
-          horseReqOut(i).Direction = output(i).direction;
-          horseReqOut(i).numberofcycles = output(i).numcycles;
-          if spotcheck
-            saveas(fig1,[myfile,'_fulltrial.png']);
-          end
-          output(i).byEye='not enough strides';
-          continue %go to next iteration of for loop because there aren't enough strides in this trial
-          end
+    output(i).Hstridelength.avg = mean(abs(sHHoofx(strideIndex(:,1))-sHHoofx(strideIndex(:,2))));
+    output(i).Hstridelength.std =  std(abs(sHHoofx(strideIndex(:,1))-sHHoofx(strideIndex(:,2))));
+    stridesXstart=sHHoofx(unique(strideIndex));
     %% analysis of sided data
     %% Hind toe
-          [output(i).HT.x.avg, output(i).HT.f.avg, output(i).HT.x.std,output(i).HT.f.std] = avgforstride (sHTx,sHTf, strides, stridesXstart,spotcheck,color,'HindToeX'); 
+     color=colors(1,:);
+          [output(i).HHoof.x.avg, output(i).HHoof.f.avg, output(i).HHoof.x.std,output(i).HHoof.f.std] = avgforstride (sHHoofx,sHHooff, strides, stridesXstart,spotcheck,color,'HindHoofX'); 
         if spotcheck
             figure(1)
-            plot(sHTf, sHTx/10,'Color',color,'DisplayName','HindToeX/10')
+            plot(sHHooff, sHHoofx/10,'Color',color,'DisplayName','HindHoofX/10')
             if pausevalue
             pause
             end
         end
        color=colors(2,:);%rand(1,3);
-       sHTy=sHTy- (floorfit(1)*(1:length(sHTy))+floorfit(2))'; 
-      [~,output(i).ToeProminance.avg,~,output(i).ToeProminance.std] = pulloutYstuff(sHTy,sHTf,spotcheck,color,'HindToeY');%mean 1/2 peak width and mean prominance
-      [output(i).HT.y.avg, ~,output(i).HT.y.std,~] =   avgforstride(sHTy,sHTf, strides, [],spotcheck,color,'HindToeY'); 
+       sHHoofy=sHHoofy- (floorfit(1)*(1:length(sHHoofy))+floorfit(2))'; 
+      [~,output(i).HoofProminance.avg,~,output(i).HoofProminance.std] = pulloutYstuff(sHHoofy,sHHooff,spotcheck,color,'HindHoofY');%mean 1/2 peak width and mean prominance
+      [output(i).HHoof.y.avg, ~,output(i).HHoof.y.std,~] =   avgforstride(sHHoofy,sHHooff, strides, [],spotcheck,color,'HindHoofY'); 
         if spotcheck & pausevalue
             pause
         end
         
     %% Hind midfoot    
     color=colors(3,:);%rand(1,3);
-      [output(i).HM.x.avg, output(i).HM.f.avg,output(i).HM.x.std,output(i).HM.f.std] = avgforstride (sHMx,sHMf, strides, stridesXstart,spotcheck,color,'HindMidX');
+      [output(i).HFetlock.x.avg, output(i).HFetlock.f.avg,output(i).HFetlock.x.std,output(i).HFetlock.f.std] = avgforstride (sHFetlockx,sHFetlockf, strides, stridesXstart,spotcheck,color,'HindFetlockX');
         if spotcheck
             figure(1);hold on;
-            plot(sHMf,sHMx/10,'Color',color,'DisplayName','HindMidX/10')
+            plot(sHFetlockf,sHFetlockx/10,'Color',color,'DisplayName','HindFetlockX/10')
             if pausevalue
             pause
             end
         end
      color=colors(4,:);
-     sHMy=sHMy-((floorfit(1)*(1:length(sHMy))+floorfit(2)))';
-      [output(i).HM.y.avg, ~,output(i).HM.y.std] = avgforstride (sHMy,sHMf, strides, [],spotcheck,color,'HindMidY'); 
+     sHFetlocky=sHFetlocky-((floorfit(1)*(1:length(sHFetlocky))+floorfit(2)))';
+      [output(i).HFetlock.y.avg, ~,output(i).HFetlock.y.std] = avgforstride (sHFetlocky,sHFetlockf, strides, [],spotcheck,color,'HindFetlockY'); 
         if spotcheck
             figure(1);hold on;
-            plot(sHMf,sHMy,'Color',color,'DisplayName','HindMidY')
+            plot(sHFetlockf,sHFetlocky,'Color',color,'DisplayName','HindFetlockY')
             if pausevalue
             pause
             end
         end
-    %% Hind Heel    
+    %% Hind Hock    
     color=colors(5,:);%rand(1,3);
-      [output(i).HH.x.avg, output(i).HH.f.avg,output(i).HH.x.std,output(i).HH.f.std] = avgforstride (sHHx,sHHf, strides, stridesXstart,spotcheck,color,'HindHeelX');
+      [output(i).HHock.x.avg, output(i).HHock.f.avg,output(i).HHock.x.std,output(i).HHock.f.std] = avgforstride (sHHockx,sHHockf, strides, stridesXstart,spotcheck,color,'HindHockX');
         if spotcheck
             figure(1);
             %plot(frame(HindHeelL>L),HHx,'DisplayName','HindHeelX')
-            plot(sHHf,sHHx/10,'Color',color,'DisplayName','HindHeelX/10')
+            plot(sHHockf,sHHockx/10,'Color',color,'DisplayName','HindHockX/10')
         end
         color=colors(6,:);%rand(1,3);%y is inverted because origin is top left
-      sHHy=sHHy-((floorfit(1)*(1:length(sHHy))+floorfit(2)))';
-      [~,output(i).HeelProminance.avg,~,output(i).HeelProminance.std] = pulloutYstuff(sHHy,sHHf,spotcheck,color,'HindHeelY');%mean 1/2 peak width and mean prominance
-      [output(i).HH.y.avg, ~,output(i).HH.y.std] = avgforstride (sHHy,sHHf, strides, [],spotcheck,color,'HindHeelY');
+      sHHocky=sHHocky-((floorfit(1)*(1:length(sHHocky))+floorfit(2)))';
+      [~,output(i).HockProminance.avg,~,output(i).HockProminance.std] = pulloutYstuff(sHHocky,sHHockf,spotcheck,color,'HindHockY');%mean 1/2 peak width and mean prominance
+      [output(i).HHock.y.avg, ~,output(i).HHock.y.std] = avgforstride (sHHocky,sHHockf, strides, [],spotcheck,color,'HindHockY');
         if spotcheck & pausevalue
             pause
         end
@@ -205,35 +207,35 @@ for filenum = 1:size(files, 1)
         %maybe lol
         %velocity in pixels/frame
         %distance in pixels for each frame lol
-        vHHx=gradient(sHHx);
-        vHHy=gradient(sHHy);
-        HHdistance = sqrt( (vHHx).^2 + (vHHy).^2 );
+        vHHoofx=gradient(sHHoofx);
+        vHHoofy=gradient(sHHoofy);
+        HHoofdistance = sqrt( (vHHoofx).^2 + (vHHoofy).^2 );
         strikes = unique(strides);%strides is in frames, need to find HH index that matches
         for j=1:length(strikes)
-            [~,strikes(j)] = min(abs(sHHf-strikes(j)));
+            [~,strikes(j)] = min(abs(sHHooff-strikes(j)));
         end
-        vHH=NaN(size(strikes));
+        vHHoof=NaN(size(strikes));
         for k=1:length(strikes)
         winstart = strikes(k)-20;winstart(winstart<1)=1;
-        winend   = strikes(k)+ 4;winend(winend>length(HHdistance))=length(HHdistance);           
-        vHH(k) = median(HHdistance(winstart:winend));%in pixels per frame
+        winend   = strikes(k)+ 4;winend(winend>length(HHoofdistance))=length(HHoofdistance);           
+        vHHoof(k) = median(HHoofdistance(winstart:winend));%in pixels per frame
         end
-        vHHstd=std(vHH);
-        vHH = mean(vHH);
+        vHHoofstd=std(vHHoof);
+        vHHoof = mean(vHHoof);
         %% checking. Comment out if you don't want to do this rn.
-        if 0 %spotcheck
-            output(i).byEye = input('g for good, e for need to edit, n for bad','s');
-        else
-            output(i).byEye = 'unseen'; 
-        end
+%         if spotcheck
+%             output(i).byEye = input('g for good, e for need to edit, n for bad','s');
+%         else
+%             output(i).byEye = 'unseen'; 
+%         end
     %% fore    
     Fx = ForeX(ForeL>L);Ff=frame(ForeL>L);color=colors(7,:);%rand(1,3);
     Fy= -ForeY(ForeL>L);Fy=Fy-((floorfit(1)*(1:length(Fy))+floorfit(2)))';
     [sFx,sFy,sFf] = basiccmooth(Fx, Fy, Ff, d2);%using d2 filter    
-      [output(i).F.y.avg, ~,output(i).F.y.std] = avgforstride (sFy,sFf, strides, [],spotcheck,color,'HindHeelX');
-      [output(i).F.x.avg, output(i).F.f.avg,output(i).F.x.std,output(i).F.f.std] = avgforstride(sFx,sFf, strides, stridesXstart,spotcheck,color,'ForeX');
+      [output(i).FHoof.y.avg, ~,output(i).FHoof.y.std] = avgforstride (sFy,sFf, strides, [],spotcheck,color,'FHoofY');
+      [output(i).FHoof.x.avg, output(i).FHoof.f.avg,output(i).FHoof.x.std,output(i).FHoof.f.std] = avgforstride(sFx,sFf, strides, stridesXstart,spotcheck,color,'FHoofX');
      color=colors(8,:);%rand(1,3);
-      [output(i).F.y.avg, ~,output(i).F.y.std] = avgforstride(sFy,sFf, strides, [],spotcheck,color,'ForeY'); 
+      [output(i).FHoof.y.avg, ~,output(i).FHoof.y.std] = avgforstride(sFy,sFf, strides, [],spotcheck,color,'FHoofY'); 
         if spotcheck
             figure(1);hold on; 
             plot(sFf,sFy,'Color',color,'DisplayName','ForeY');
@@ -253,7 +255,7 @@ for filenum = 1:size(files, 1)
         Fdistance = sqrt( (vFx).^2 + (vFy).^2 );
         strikes = unique(Fstrides);%strides is in frames, need to find HH index that matches
         for j=1:length(strikes)
-            [~,strikes(j)] = min(abs(sHHf-strikes(j)));
+            [~,strikes(j)] = min(abs(sHHockf-strikes(j)));
         end
         vF=NaN(size(strikes));
         for k=1:length(strikes)
@@ -263,29 +265,43 @@ for filenum = 1:size(files, 1)
         end
         vFstd=std(vF);
         vF = mean(vF);
-      catch ME
-          catchmsg(i)=ME.identifier
+      catch 
+          output(i).byEye=append(output(i).byEye,'issue with vF');
           vFstd=NaN;
           vF = NaN;
       end
-    %% tailbase to midfoot distance    
-        TBMF = sqrt( ((HindMidY-TailBasey).^2)+((HindMidX-TailBasex).^2) ); color=colors(9,:);%rand(1,3);%Tailbase to midfoot length
-        TBMF =  TBMF(HindMidL>L & TailBasel>L);        TBMFf =frame(HindMidL>L & TailBasel>L);
-        [sTBMF,~,sTBMFf] = basiccmooth(TBMF, TBMF,TBMFf, d1);%using og filter   
-      [output(i).TBMF.y.avg, output(i).TBMF.f.avg,output(i).TBMF.y.std,output(i).TBMF.f.std] = avgforstride(sTBMF,sTBMFf, strides, [], spotcheck,color,'TailBaseMidFootLength');
+    %% hip to hind toe/hoof distance          
+        HipHoof = sqrt( ((HindHoofY-hipy).^2)+((HindHoofX-hipx).^2) ); color=colors(9,:);%rand(1,3);%hip to hind hoof length
+        HipHoof =  HipHoof(HindHoofL>L & hipl>L);        HipHooff =frame(HindHoofL>L & hipl>L);
+        [sHipHoof,~,sHipHooff] = basiccmooth(HipHoof, HipHoof,HipHooff, d1);%using og filter   
+      [output(i).HipHoof.y.avg, output(i).HipHoof.f.avg,output(i).HipHoof.y.std,output(i).HipHoof.f.std] = avgforstride(sHipHoof,sHipHooff, strides, [], spotcheck,color,'hipHoofLength');
         if spotcheck
             figure(1);hold on;
-            %plot(TBMFf,TBMF,'DisplayName','TailBasetoMidFootLength');
-            %plot(sTBMFf,sTBMF/10,'Color',color,'DisplayName','TailBasetoMidFootLength/10')
+            %plot(HipHooff,HipHoof,'DisplayName','TailBasetoMidFootLength');
+            plot(sHipHooff,sHipHoof,'Color',color,'DisplayName','HipHoofLength')
             if pausevalue
             pause
             end
         end
+    %% withers to fore toe/hoof distance          
+        WithersFore = sqrt( ((ForeY-withersy).^2)+((ForeX-withersx).^2) ); color=colors(10,:);%rand(1,3);%hip to hind hoof length
+        WithersFore =  WithersFore(ForeL>L & withersl>L);        WithersForef =frame(ForeL>L & withersl>L);
+        [sWithersFore,~,sWithersForef] = basiccmooth(WithersFore, WithersFore,WithersForef, d1);%using og filter   
+      [output(i).WithersFore.y.avg, output(i).WithersFore.f.avg,output(i).WithersFore.y.std,output(i).WithersFore.f.std] = avgforstride(sWithersFore,sWithersForef, strides, [], spotcheck,color,'WithersForeLength');
+        if spotcheck
+            figure(1);hold on;
+            %plot(WithersForef,WithersFore,'DisplayName','TailBasetoMidFootLength');
+            plot(sWithersForef,sWithersFore,'Color',color,'DisplayName','WithersForeLength')
+            if pausevalue
+            pause
+            end
+        end
+
      %% shank length (for normalizing)   
-     shankLength = sqrt( ((HindMidY-HindHeelY).^2)+((HindMidX-HindHeelX).^2) ); color=colors(9,:);%rand(1,3);%shank length for normalizing
-        shankLength =  shankLength(HindMidL>L & HindHeelL>L);        shankLengthf =frame(HindMidL>L & HindHeelL>L);
+     shankLength = sqrt( ((HindFetlockY-HindHockY).^2)+((HindFetlockX-HindHockX).^2) ); color=colors(11,:);%rand(1,3);%shank length for normalizing
+        shankLength =  shankLength(HindFetlockL>L & HindHockL>L);        shankLengthf =frame(HindFetlockL>L & HindHockL>L);
         [sshankLength,~,sshankLengthf] = basiccmooth(shankLength, shankLength,shankLengthf, d1);%using og filter   
-      [output(i).shankLength.y.avg, output(i).shankLength.f.avg,output(i).shankLength.y.std,output(i).shankLengthF.f.std] = avgforstride(sshankLength,sshankLengthf, strides, 'y', spotcheck,color,'TailBaseMidFootLength');
+      [output(i).shankLength.y.avg, output(i).shankLength.f.avg,output(i).shankLength.y.std,output(i).shankLength.f.std] = avgforstride(sshankLength,sshankLengthf, strides, 'y', spotcheck,color,'shankLengtLength');
         output(i).shankLength.avg = mean(output(i).shankLength.y.avg);
       if spotcheck
             figure(1);hold on;
@@ -295,10 +311,10 @@ for filenum = 1:size(files, 1)
             end
       end
      %% head length (for normalizing)             
-             headLength = sqrt( ((polly-nosey).^2)+((pollx-nosex).^2) ); color=colors(11,:);%rand(1,3);%headLength for normalizing
+             headLength = sqrt( ((polly-nosey).^2)+((pollx-nosex).^2) ); color=colors(12,:);%rand(1,3);%headLength for normalizing
         headLength =  headLength(polll>L & nosel>L);        headLengthf =frame(polll>L & nosel>L);
         [sheadLength,~,sheadLengthf] = basiccmooth(headLength, headLength,headLengthf, d1);%using og filter   
-      [output(i).headLength.y.avg, output(i).headLength.f.avg,output(i).headLength.y.std,output(i).headLengthF.f.std] = avgforstride(sheadLength,sheadLengthf, strides, 'y', spotcheck,color,'headLength');
+      [output(i).headLength.y.avg, output(i).headLength.f.avg,output(i).headLength.y.std,output(i).headLength.f.std] = avgforstride(sheadLength,sheadLengthf, strides, 'y', spotcheck,color,'headLength');
         output(i).headLength.avg = mean(output(i).headLength.y.avg);
       if spotcheck
             figure(1);hold on;
@@ -309,31 +325,57 @@ for filenum = 1:size(files, 1)
             end
       end  
       
-    %% HT-HM-HH angle   
-        color=colors(10,:);%rand(1,3);
-      [angle, goodframes] = findangle(HindToeX,HindToeY,HindToeL,HindMidX,HindMidY,HindMidL, HindHeelX,HindHeelY,HindHeelL,frame,L,spotcheck,color,'toe-midfoot-heel angle'); %2nd is where the angle is
-        [output(i).HT_HM_HH.y.avg, output(i).HT_HM_HH.f.avg,output(i).HT_HM_HH.y.std,output(i).HT_HM_HH.f.std] = avgforstride(angle',goodframes, strides, 'y',spotcheck,color,'toe-midfoot-heel angle');
-        if spotcheck & pausevalue
+    %% HHoof-HFetlock-HHock angle   
+        color=colors(13,:);%rand(1,3);
+      [HHoof_HFetlock_HHock, goodframes] = findangle(HindHoofX,HindHoofY,HindHoofL,HindFetlockX,HindFetlockY,HindFetlockL, HindHockX,HindHockY,HindHockL,frame,L,spotcheck,color,'HHoof-Hfetlock-HHock angle'); %2nd is where the angle is
+        [output(i).HHoof_HFetlock_HHock.y.avg, output(i).HHoof_HFetlock_HHock.f.avg,output(i).HHoof_HFetlock_HHock.y.std,output(i).HHoof_HFetlock_HHock.f.std] = avgforstride(HHoof_HFetlock_HHock',goodframes, strides, 'y',spotcheck,color,'HHoof-HFetlock-HHock angle');
+      if spotcheck
+            figure(1);hold on;
+            plot(goodframes,HHoof_HFetlock_HHock,'Color',color,'DisplayName','HHoof-HFetlock-HHock')
+            if pausevalue
             pause
-        end
-    %% HT-HM-TB angle
-        color=colors(11,:);%rand(1,3);
-      [angle, goodframes] = findangle(HindToeX,HindToeY,HindToeL,HindMidX,HindMidY,HindMidL, TailBasex,TailBasey,TailBasel,frame,L,spotcheck,color,'toe-midfoot-tailbase angle'); %2nd is where the angle is
-        [output(i).HT_HM_TB.y.avg, output(i).HT_HM_TB.f.avg,output(i).HT_HM_TB.y.std,output(i).HT_HM_TB.f.std] = avgforstride(angle',goodframes, strides, 'y',spotcheck,color,'toe-midfoot-tailbase angle');
-        if spotcheck & pausevalue
+            end
+      end  
+%     %% HT-HM-TB angle
+%         color=colors(11,:);%rand(1,3);
+%       [angle, goodframes] = findangle(HindHoofX,HindHoofY,HindHoofL,HindFetlockX,HindFetlockY,HindFetlockL, TailBasex,TailBasey,TailBasel,frame,L,spotcheck,color,'toe-midfoot-tailbase angle'); %2nd is where the angle is
+%         [output(i).HHoof_HFetlock_butt.y.avg, output(i).HHoof_HFetlock_butt.f.avg,output(i).HHoof_HFetlock_butt.y.std,output(i).HHoof_HFetlock_butt.f.std] = avgforstride(angle',goodframes, strides, 'y',spotcheck,color,'toe-midfoot-tailbase angle');
+%         if spotcheck & pausevalue
+%             pause
+%         end
+%     %% HT-TB-B angle
+%         color=colors(12,:);%rand(1,3);
+%       [angle, goodframes] = findangle(HindFetlockX,HindFetlockY,HindFetlockL, TailBasex,TailBasey,TailBasel,withersx, withersy, withersl, frame,L,spotcheck,color,'toe-tailbase-back angle'); %2nd is where the angle is
+%         [output(i).HFetlock_butt_withers.y.avg, output(i).HFetlock_butt_withers.f.avg,output(i).HFetlock_butt_withers.y.std,output(i).HFetlock_butt_withers.f.std] = avgforstride(angle',goodframes, strides, 'y',spotcheck,color,'toe-tailbase-back angle');
+%         if spotcheck & pausevalue
+%             pause
+%         end
+    %% angle of hind virtual limb
+        color=colors(14,:);%rand(1,3);
+      [angle, goodframes] = findangle(HindHoofX,HindHoofY,HindHoofL, hipx,hipy,hipl,hipx, HindHoofY, HindHoofL, frame,L,spotcheck,color,'HHoof-hip angle'); %2nd is where the angle is
+        [output(i).HHoof_hip.y.avg, output(i).HHoof_hip.f.avg,output(i).HHoof_hip.y.std,output(i).HHoof_hip.f.std] = avgforstride(angle',goodframes, strides, [],spotcheck,color,'HHoof-hip angle');
+      if spotcheck
+            figure(1);hold on;
+            plot(goodframes,angle,'Color',color,'DisplayName','HHoof-hip')
+            if pausevalue
             pause
-        end
-    %% HT-TB-B angle
-        color=colors(12,:);%rand(1,3);
-      [angle, goodframes] = findangle(HindMidX,HindMidY,HindMidL, TailBasex,TailBasey,TailBasel,Backx, Backy, Backl, frame,L,spotcheck,color,'toe-tailbase-back angle'); %2nd is where the angle is
-        [output(i).HT_TB_B.y.avg, output(i).HT_TB_B.f.avg,output(i).HT_TB_B.y.std,output(i).HT_TB_B.f.std] = avgforstride(angle',goodframes, strides, 'y',spotcheck,color,'toe-tailbase-back angle');
-        if spotcheck & pausevalue
+            end
+      end  
+    %% angle of fore virtual limb
+        color=colors(15,:);%rand(1,3);
+      [angle, goodframes] = findangle(ForeX,ForeY,ForeL, withersx,withersy,withersl,withersx, ForeY, ForeL, frame,L,spotcheck,color,'FHoof-withers angle'); %2nd is where the angle is
+        [output(i).FHoof_withers.y.avg, output(i).FHoof_withers.f.avg,output(i).FHoof_withers.y.std,output(i).FHoof_withers.f.std] = avgforstride(angle',goodframes, strides, [],spotcheck,color,'FHoof-withers angle');
+      if spotcheck
+            figure(1);hold on;
+            plot(goodframes,angle,'Color',color,'DisplayName','FHoof-withers')
+            if pausevalue
             pause
-        end
-
+            end
+      end  
+          
     %% nonsided
     %% nose 
-    Nf = frame(nosel>L);color=colors(13,:);%rand(1,3);%Nx was defined earlier
+    Nf = frame(nosel>L);color=colors(16,:);%rand(1,3);%Nx was defined earlier
     Ny= -nosey(nosel>L);Ny=Ny-((floorfit(1)*(1:length(Ny))+floorfit(2)))';
        [sNx,sNy, sNf] = basiccmooth(Nx, Ny,Nf, d1);%using og filter
      [output(i).N.x.avg, output(i).N.f.avg,output(i).N.x.std,output(i).N.f.std] = avgforstride(sNx,sNf, strides, stridesXstart,spotcheck,color,'NoseX');
@@ -341,7 +383,7 @@ for filenum = 1:size(files, 1)
             figure(1);hold on;
             %plot(sNf,sNx/10,'Color',color,'DisplayName','NoseX/10')
        end
-     color=colors(14,:);%rand(1,3);%height of nose relative to floor
+     color=colors(16,:)+.06;%rand(1,3);%height of nose relative to floor
       [output(i).N.y.avg, ~,output(i).N.y.std,~] = avgforstride(sNy,sNf, strides, [],spotcheck,color,'NoseY'); 
         if spotcheck
             figure(1);hold on;
@@ -352,30 +394,30 @@ for filenum = 1:size(files, 1)
         end
         
     %% back
-    Bx= Backx(Backl>L); Bf=frame(Backl>L); color=colors(15,:);%rand(1,3);
-    By= -Backy(Backl>L); By=By-((floorfit(1)*(1:length(By))+floorfit(2)))';
-        [sBx,sBy, sBf] = basiccmooth(Bx, By,Bf, d1);%using og filter
-       [output(i).B.x.avg, output(i).B.f.avg,output(i).B.x.std,output(i).B.f.std] = avgforstride(sBx,sBf, strides, stridesXstart,spotcheck,color,'BackX');
+    withersX= withersx(withersl>L); withersF=frame(withersl>L); color=colors(17,:);%rand(1,3);
+    withersY= -withersy(withersl>L); withersY=withersY-((floorfit(1)*(1:length(withersY))+floorfit(2)))';
+        [swithersx,swithersy, swithersf] = basiccmooth(withersX, withersY,withersF, d1);%using og filter
+       [output(i).withers.x.avg, output(i).withers.f.avg,output(i).withers.x.std,output(i).withers.f.std] = avgforstride(swithersx,swithersf, strides, stridesXstart,spotcheck,color,'withersX');
         if spotcheck
             figure(1);hold on;
             %plot(sBf,sBx/10, 'Color',color,'DisplayName','BackX/10')
         end
-    color=colors(16,:);%rand(1,3);%height of back relative to floor already defined
-       [output(i).B.y.avg, ~,output(i).B.y.std,~] = avgforstride(sBy,sBf, strides, [],spotcheck,color,'BackY'); 
+    color=colors(17,:)+.05;%height of back relative to floor already defined
+       [output(i).withers.y.avg, ~,output(i).withers.y.std,~] = avgforstride(swithersy,swithersf, strides, [],spotcheck,color,'withersY'); 
         if spotcheck
             figure(1);hold on;
-            %plot(sBf,sBy/2, 'Color',color,'DisplayName','BackY/2')
+            plot(swithersf,swithersy, 'Color',color,'DisplayName','withersY')
             if pausevalue
             pause
             end
         end
      %% backslope  
-    backslope = (-(Backy-TailBasey)./(Backx-TailBasex));  color=colors(17,:);%rand(1,3);%(y-y/x-x) %y is negative because the origin is in the top left
-        backslope = backslope(Backl>L & TailBasel>L); bsf =frame(Backl>L & TailBasel>L);
+    backslope = (-(withersy-TailBasey)./(withersx-TailBasex));  color=colors(17,:);%(y-y/x-x) %y is negative because the origin is in the top left
+        backslope = backslope(withersl>L & TailBasel>L); bsf =frame(withersl>L & TailBasel>L);
         [sbackslope,~,sbsf] = basiccmooth(backslope,backslope, bsf, d1);
         backslope = -directionfactor*(sbackslope);% needed.
         backangle = atand(sbackslope);
-      [nBackA, nBAf,nBAstd] = avgforstride(backangle,sbsf, strides, 'y',spotcheck,color,'BackAngle'); 
+      [nBackA, nBAf,nBAstd] = avgforstride(backangle,sbsf, strides, 'y',0,color,'BackAngle'); 
         if spotcheck == 1
             figure(1); hold on;
             %plot(bsf,-directionfactor*backslope*10,'DisplayName','backslope*10');
@@ -386,7 +428,7 @@ for filenum = 1:size(files, 1)
         end
         
     %velocity
-        velocity =  abs(gradient(output(i).B.x.avg)) ./ (gradient(output(i).B.f.avg));
+        velocity =  abs(gradient(output(i).withers.x.avg)) ./ (gradient(output(i).withers.f.avg));
         output(i).velocity.avg = abs(mean(velocity));%in pixels per frame
         output(i).velocity.std = std(velocity);%in pixels per frame
 
@@ -408,15 +450,34 @@ for filenum = 1:size(files, 1)
     horseReqOut(i).stridelengthStd = output(i).Hstridelength.std;
     horseReqOut(i).speedAvg = output(i).velocity.avg;
     horseReqOut(i).speedStd = output(i).velocity.std;
-    horseReqOut(i).AngleAvg = mean(output(i).HT_HM_HH.y.avg);
-    horseReqOut(i).AngleStd = std(output(i).HT_HM_HH.y.avg);
-    horseReqOut(i).HHvelocityAvg = vHH;
-    horseReqOut(i).HHvelocityStd = vHHstd;
-    horseReqOut(i).FvelocityAvg = vF;
-    horseReqOut(i).FvelocityStd = vFstd;
-    %end
+    
+    horseReqOut(i).MaxHHoof_HFetlock_HHock = max(output(i).HHoof_HFetlock_HHock.y.avg);
+    horseReqOut(i).MinHHoof_HFetlock_HHock = min(output(i).HHoof_HFetlock_HHock.y.avg);
+    horseReqOut(i).HHoof_HFetlock_HHockStd = std(output(i).HHoof_HFetlock_HHock.y.avg);
+    
+    horseReqOut(i).HHoofVelocityAtFootstrikeAvg = vHHoof;
+    horseReqOut(i).HHoofVelocityAtFootstrikeStd = vHHoofstd;
+    horseReqOut(i).FHoofVelocityAtFootstrikeAvg = vF;
+    horseReqOut(i).FHoofVelocityAtFootstrikeStd = vFstd;
+    
+    horseReqOut(i).HHoofProminanceAvg = output(i).HoofProminance.avg;
+    horseReqOut(i).HHoofProminanceStd = output(i).HoofProminance.std;
+    
+    horseReqOut(i).MinHHoofHipAngle = min(output(i).HHoof_hip.y.avg);
+    horseReqOut(i).MaxHHoofHipAngle = max(output(i).HHoof_hip.y.avg);
+    horseReqOut(i).MinFHoof_withersAngle = min(output(i).FHoof_withers.y.avg);
+    horseReqOut(i).MaxFHoof_withersAngle = max(output(i).FHoof_withers.y.avg);
+    
+    horseReqOut(i).MinHHoofHipLength = min(output(i).HipHoof.y.avg);
+    horseReqOut(i).MaxHHoofHipLength = max(output(i).HipHoof.y.avg);
+    horseReqOut(i).MinWithersForeLength = min(output(i).WithersFore.y.avg);
+    horseReqOut(i).MaxWithersForeLength = max(output(i).WithersFore.y.avg);
+
+    end
 
 end
+save('output.mat','output');
+writetable(struct2table(horseReqOut),'SelectedOutputs.xlsx');
 allDone = 'Yay!'
 
 %%
@@ -512,10 +573,10 @@ stance1(stance1==.5)=0; %the movmedian makes there be .5 values when it goes fro
 [pks2,toeoff]= findpeaks(-[stance1;0],[rframes;rframes(end)+1],'MinPeakDistance',25,'MinPeakWidth',10);% frames in swing - tunable
 
 if length(toestrike)<=1 %if there are not footstrikes, abort the trial
+    toestrike=[0 0];pks=[0 0];
     dutyfactor=nan; stridelength=nan;strides=nan;
     numcycles=nan; datasnew=nan;percentfsnew=nan;
     dutyfactorStd=nan;stridelengthStd=nan;datasnewstd=nan;percentfsnewstd=nan; byEye = 'toestrike<=1';
-    return
 end
 
 %set up strides matrix 
@@ -548,8 +609,8 @@ if spotcheck
     while val ==0
         figure(1);hold on;
         %plot(frames,   data/10, 'Color',color,'DisplayName',[name, '/10']);
-        plot(rframes, abs(dxdf*10), 'Color',color,'DisplayName',['|derivative*10|',name]);
-        plot(rframes,threshline*10,'DisplayName','threshold line for stance/swing*10')
+        plot(rframes, abs(dxdf), 'Color',color,'DisplayName',['|derivative|',name]);
+        %plot(rframes,threshline*10,'DisplayName','threshold line for stance/swing*10')
         plot(rframes, (stance1-.1)*100+offsetforgraphing,'.','Color',color*(2.5/3),'DisplayName',[name,' stance']);
         plot([toestrike,toestrike]',[(pks-1.1)*100-offsetforgraphing,(pks-.1)+100+offsetforgraphing]','Color',color*(2.2/3),'HandleVisibility','off'); 
             plot(0,0,'Color',color,'DisplayName',[name,' toestrike']); %just for the legend info
@@ -578,7 +639,7 @@ end
 function [avnwinstrides, avnwinfs, avwinstridesSTDEV,avwinfsSTDEV] = avgforstride(data,f2, strides, stridesXstart, spotcheck,color,name)
     %minlength = inf;
     datas={};
-    winsize = 10;%size in percentage of stride
+    winsize = 25;%size in percentage of stride
     %% plot as percent of stride
     for j=1:size(strides,1)
         stridestartf=strides(j,1);
